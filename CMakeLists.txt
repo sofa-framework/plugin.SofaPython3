@@ -34,11 +34,8 @@ include(SofaPython3Tools)
 # OPTIONS
 include(CMakeDependentOption)
 
-if (SP3_COMPILED_AS_SOFA_SUBPROJECT)
-    option(SP3_BUILD_TEST "Compile the automatic tests for SofaPython3, along with the gtest library." ${SOFA_BUILD_TESTS})
-else()
-    option(SP3_BUILD_TEST "Compile the automatic tests for SofaPython3, along with the gtest library." ON)
-endif()
+# If SOFA_BUILD_TESTS exists and is OFF, then this option will be auto-disabled
+cmake_dependent_option(SP3_BUILD_TEST "Compile the automatic tests for SofaPython3, along with the gtest library." ON "SOFA_BUILD_TESTS OR NOT DEFINED SOFA_BUILD_TESTS" OFF)
 
 find_package(SofaExporter QUIET)
 CMAKE_DEPENDENT_OPTION(SP3_WITH_SOFAEXPORTER "Bind the SOFA exporter component." ON "SofaExporter_FOUND" OFF)
@@ -83,20 +80,7 @@ set(PYBIND11_PYTHON_VERSION 3.7)
 
 # Find Python3 executable and set PYTHON_EXECUTABLE before finding pybind11
 # to be sure that pybind11 relies on the right Python version
-set(python_version "${PYBIND11_PYTHON_VERSION}")
-set(python_version_flag "")
-if(PYTHON_EXECUTABLE)
-    execute_process(
-        COMMAND "${PYTHON_EXECUTABLE}" "--version"
-        OUTPUT_VARIABLE cmd_output
-        )
-    string(REGEX MATCH "[0-9]+\.[0-9]+" python_exec_version "${cmd_output}")
-    if(python_exec_version VERSION_GREATER_EQUAL PYBIND11_PYTHON_VERSION)
-        set(python_version "${python_exec_version}")
-        set(python_version_flag "EXACT")
-    endif()
-endif()
-find_package(Python ${python_version} ${python_version_flag} COMPONENTS Interpreter Development REQUIRED)
+find_package(Python ${PYBIND11_PYTHON_VERSION} COMPONENTS Interpreter Development REQUIRED)
 set(PYTHON_VERSION ${Python_VERSION})
 set(PYTHON_EXECUTABLE ${Python_EXECUTABLE})
 set(PYTHON_LIBRARIES ${Python_LIBRARIES})
